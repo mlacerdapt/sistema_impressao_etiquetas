@@ -1,45 +1,43 @@
+from flask import Flask, render_template, request, redirect, url_for
 import pandas as pd
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from print import gerar_etiqueta, imprimir_zebra, registrar_impressao
 
-# Carregar o arquivo Excel
-file_path = r'\\srv-pt3\groups\02-Blades\02-Process Engineering\9. Projetos\4. Dashboard\Base de Dados\All - Por Ano\All_2025.XLSX'
-work_center = 'E103_CUT' 
-# Lê o arquivo Excel e carrega em um DataFrame
-df = pd.read_excel(file_path)
+app = Flask(__name__)
 
-# Remove espaços extras nas colunas
-df.columns = df.columns.str.strip()
+@app.route('/')
+def index():
+    # Carregar as ordens de produção do arquivo Excel
+    ordens_df = pd.read_excel('etiquetas_geradas.xlsx')
+    ordens = ordens_df['Ordem'].unique()  # Exibir ordens únicas
+    return render_template('index.html', ordens=ordens)
 
+@app.route('/imprimir', methods=['POST'])
+def imprimir_etiquetas():
+    numero_ordem = request.form.get('numero_ordem')
+    ordens_df = pd.read_excel('etiquetas_geradas.xlsx')
+    
+    # Filtrar a ordem selecionada
+    ordem_selecionada = ordens_df[ordens_df['Ordem'] == int(numero_ordem)]
+    
+    # Iterar e imprimir as etiquetas
+    for _, linha in ordem_selecionada.iterrows():
+        descricao = linha['Descrição']
+        material = linha['Material']
+        numero_serie = linha['Número de Série']
+        
+        # Gerar etiqueta e imprimir
+        gerar_etiqueta(descricao, material, numero_serie)
+        zpl_code = gerar_zpl(descricao, material, numero_serie)
+        
+        # Enviar para a impressora
+        printer_ip = "192.168.221.99"  # IP da impressora
+        printer_port = 9100
+        imprimir_zebra(printer_ip, printer_port, zpl_code)
+        
+        # Registrar no log
+        registrar_impressao(numero_ordem, material, numero_serie)
+    
+    return redirect(url_for('index'))  # Redirecionar de volta à página principal
 
-# Filtra apenas as linhas com o Work Center do Corte
-filtered_df = df[df['Work Center'] == work_center]
-
-# Lista final para armazenar as etiquetas
-tag_list = []
-
-# Percorre cada linha filtrada
-for index, row in filtered_df.iterrows():
-    ordem = row['Order']  # Ajuste conforme o nome correto da coluna
-    serie = row['Serialnumber (PO Head)']
-    quantidade = row['Operation Quantity (MEINH)']
-    material = row['Material']
-    descricao = row['Material Description']
-
-    # Extrai o prefixo e o número final da série
-    prefix = ''.join(filter(str.isalpha, serie))
-    start_number = int(''.join(filter(str.isdigit, serie)))
-
-    # Gera as séries sequenciais com 4 dígitos fixos
-    for i in range(quantidade):
-        numero_serie_atual = f'{prefix}{start_number + i:04d}'
-        tag_list.append({'Ordem': ordem, 'Número de Série': numero_serie_atual, 'Material': material, 'Descrição': descricao})
-
-# Transforma a lista em um DataFrame final
-final_df = pd.DataFrame(tag_list)
-
-# Salva em um novo arquivo Excel
-final_df.to_excel('etiquetas_geradas.xlsx', index=False)
-
-print('Arquivo de etiquetas gerado com sucesso!')
-
+if __name__ == '__main__':
+    app.run(debug=True)

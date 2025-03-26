@@ -11,7 +11,7 @@ Replicar o número de série de acordo com a quantidade de confirmações espera
 
 2 - Gerar etiquetas para impressão com QR Code:
 
-Criar um modelo proprio para impressão com o QR code (feito o modelo, preciso aprimorar)
+Criar um modelo proprio para impressão com o QR code (feito o modelo, preciso aprimorar) (melhorado, porem conseguimos deixar ainda melhor!)
 
 Usar a biblioteca zebra (ou rawprint) para formatar as etiquetas no padrão da impressora Zebra. (feito)
 
@@ -28,3 +28,8 @@ http://ptvdcp00XX.enercon.de/server/CFGPAGE.htm
 3 - Adicionar uma interface (extra):
 
 Se quiser algo mais prático, podemos montar uma interface simples com Tkinter ou até uma interface web com Flask.
+Tela inicial com um campo para o número da ordem.
+
+Botão para imprimir as etiquetas.
+
+Mostra se a ordem foi impressa ou não.

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Impressão de Etiquetas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Impressão de Etiquetas</h1>
+        
+        <form method="POST" action="/imprimir">
+            <label for="numero_ordem">Selecione a Ordem de Produção:</label>
+            <select name="numero_ordem" id="numero_ordem">
+                {% for ordem in ordens %}
+                    <option value="{{ ordem }}">{{ ordem }}</option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit">Imprimir Etiquetas</button>
+        </form>
+    </div>
+</body>
+</html>
