@@ -2,6 +2,8 @@ import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 import qrcode
 import socket
+import os
+from datetime import datetime
 
 # Função para gerar o QR Code
 def gerar_qr_code(conteudo):
@@ -51,6 +53,27 @@ def imprimir_zebra(ip, porta, zpl_code):
         sock.connect((ip, porta))
         sock.sendall(zpl_code.encode())
 
+# Função para registrar a impressão no log
+def registrar_log(ordem, material, numero_serie, descricao):
+    log_file = "log_impressoes.csv"
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_entry = f"{ordem},{material},{numero_serie},{descricao},{now}\n"
+
+    if not os.path.exists(log_file):
+        with open(log_file, "w") as file:
+            file.write("Ordem,Material,Número de Série,Descrição,Data/Hora\n")
+    
+    with open(log_file, "a") as file:
+        file.write(log_entry)
+
+# Função para verificar se a etiqueta já foi impressa
+def etiqueta_ja_impressa(ordem, material, numero_serie):
+    log_file = "log_impressoes.csv"
+    if os.path.exists(log_file):
+        log_df = pd.read_csv(log_file, encoding='latin1')
+        return not log_df[(log_df['Ordem'] == ordem) & (log_df['Número de Série'] == numero_serie)].empty
+    return False
+
 # Carregar a planilha com as ordens de produção
 arquivo_excel = 'etiquetas_geradas.xlsx'
 ordens_df = pd.read_excel(arquivo_excel)
@@ -64,6 +87,12 @@ for _, linha in ordem_selecionada.iterrows():
     descricao = linha['Descrição']
     material = linha['Material']
     numero_serie = linha['Número de Série']
+    ordem = linha['Ordem']
+    
+    # Verificar se a etiqueta já foi impressa
+    if etiqueta_ja_impressa(ordem, material, numero_serie):
+        print(f"Etiqueta já impressa para Nº Série {numero_serie}. Pulando...")
+        continue
     
     # Gera etiqueta visual e ZPL para cada linha
     gerar_etiqueta(descricao, material, numero_serie)
@@ -73,5 +102,8 @@ for _, linha in ordem_selecionada.iterrows():
     printer_ip = "192.168.221.99"  # IP da impressora
     printer_port = 9100
     imprimir_zebra(printer_ip, printer_port, zpl_code)
+
+    # Registrar a impressão no log
+    registrar_log(ordem, material, numero_serie, descricao)
 
 print("Etiquetas geradas e enviadas para a impressora!")
