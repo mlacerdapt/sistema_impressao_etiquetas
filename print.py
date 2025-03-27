@@ -4,7 +4,7 @@ from tkinter import messagebox
 from PIL import Image, ImageDraw, ImageFont
 import qrcode
 import socket
-from zpl import ZPLDocument, ZPLField
+from zpl import Label
 
 # Função para gerar o QR Code
 def gerar_qr_code(conteudo):
@@ -41,13 +41,26 @@ def gerar_etiqueta(descricao, material, numero_serie):
 
 # Função para gerar o ZPL
 def gerar_zpl(descricao, material, numero_serie):
-    return (f"^XA\n"
-            f"^CI28\n"
-            f"^FO20,20^A0N,80,56^FDDescrição: {descricao}^FS\n"
-            f"^FO20,150^A0N,60,40^FDMaterial: {material}^FS\n"
-            f"^FO20,250^A0N,80,60^FDNº Série: {numero_serie}^FS\n"
-            f"^FO750,100^BQN,2,10^FDMA,{material};{numero_serie}^FS\n"
-            f"^XZ\n")
+    label = Label(104, 40)  # Define a etiqueta com largura 104mm e altura 75mm
+
+    label.origin(20, 20)
+    label.write_text(f"Descrição: {descricao}", char_height=5, char_width=4, line_width=600)
+    label.endorigin()
+
+    label.origin(20, 100)
+    label.write_text(f"Material: {material}", char_height=5, char_width=4, line_width=600)
+    label.endorigin()
+
+    label.origin(20, 180)
+    label.write_text(f"Nº Série: {numero_serie}", char_height=6, char_width=5, line_width=600)
+    label.endorigin()
+
+    label.origin(600, 50)
+    label.barcode_qr(data=f"{material};{numero_serie}", model=2, magnification=6)
+    label.endorigin()
+
+    return label.dumpZPL()
+
 
 # Função para enviar para a impressora
 def imprimir_zebra(ip, porta, zpl_code):
