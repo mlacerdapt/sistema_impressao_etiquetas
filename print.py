@@ -42,10 +42,11 @@ def gerar_etiqueta(descricao, material, numero_serie):
 # Função para gerar o ZPL
 def gerar_zpl(descricao, material, numero_serie):
     return (f"^XA\n"
-            f"^FO20,20^A0N,50,50^FDDescrição: {descricao}^FS\n"
-            f"^FO20,150^A0N,40,40^FDMaterial: {material}^FS\n"
-            f"^FO20,300^A0N,60,60^FDNº Série: {numero_serie}^FS\n"
-            f"^FO800,100^BQN,2,10^FDMA,{material};{numero_serie}^FS\n"
+            f"^CI28\n"
+            f"^FO20,20^A0N,80,56^FDDescrição: {descricao}^FS\n"
+            f"^FO20,150^A0N,60,40^FDMaterial: {material}^FS\n"
+            f"^FO20,250^A0N,80,60^FDNº Série: {numero_serie}^FS\n"
+            f"^FO750,100^BQN,2,10^FDMA,{material};{numero_serie}^FS\n"
             f"^XZ\n")
 
 # Função para enviar para a impressora
