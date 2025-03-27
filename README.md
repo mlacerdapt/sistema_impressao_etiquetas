@@ -24,6 +24,15 @@ PTVDCP0052 - impressora desligada
 
 http://ptvdcp00XX.enercon.de/server/CFGPAGE.htm
 
+configurações da etiqueta, arquivo zpl:
+^XA
+^CI28
+^FO20,20^A0N,80,60^FDDescrição: Caixa Balanç. BCH E115EP3RB03^FS
+^FO20,150^A0N,60,40^FDMaterial: 717803^FS
+^FO20,250^A0N,80,60^FDNº Série: EVC0333^FS
+^FO750,100^BQN,2,10^FDMA,717803;EVC0333^FS
+^XZ
+
 
 3 - Adicionar uma interface (extra):
 

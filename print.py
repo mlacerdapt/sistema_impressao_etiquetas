@@ -31,35 +31,30 @@ def gerar_etiqueta(descricao, material, numero_serie):
     except IOError:
         font_descricao = font_material = font_numero = ImageFont.load_default()
 
-    draw.text((20, 20), f"DESCRIÇÃO: {descricao}", font=font_descricao, fill='black')
-    draw.text((20, 150), f"MATERIAL: {material}", font=font_material, fill='black')
-    draw.text((20, 300), f"NÚMERO DE SÉRIE: {numero_serie}", font=font_numero, fill='black')
+    draw.text((20, 20), f"Descr.: {descricao}", font=font_descricao, fill='black')
+    draw.text((20, 150), f"Material: {material}", font=font_material, fill='black')
+    draw.text((20, 300), f"Nº Série: {numero_serie}", font=font_numero, fill='black')
 
     qr_img = gerar_qr_code(f"{material};{numero_serie}")
     etiqueta.paste(qr_img, (800, 100))
-    etiqueta.save(f"etiqueta_{numero_serie}.png")
+    etiqueta.save(f"image\etiqueta_{numero_serie}.png")
 
 # Função para gerar o ZPL
 def gerar_zpl(descricao, material, numero_serie):
-    label = Label(104, 40)  # Define a etiqueta com largura 104mm e altura 75mm
+    return (f"^XA\n"
+            f"^PW1222\n"  # Define a largura da etiqueta para 832 dots (104mm)
+            f"^LL470\n"  # Define a altura da etiqueta para 320 dots (40mm)
+            f"^CI28\n"  # Permite caracteres UTF-8
 
-    label.origin(20, 20)
-    label.write_text(f"Descrição: {descricao}", char_height=5, char_width=4, line_width=600)
-    label.endorigin()
+            # Texto alinhado à esquerda
+            f"^FO30,20^A0N,60,100^FDDesc.: {descricao}^FS\n"
+            f"^FO30,150^A0,60,60^FDMaterial: {material}^FS\n"
+            f"^FO30,250^A0N,90,60^FDNº Série: {numero_serie}^FS\n"
 
-    label.origin(20, 100)
-    label.write_text(f"Material: {material}", char_height=5, char_width=4, line_width=600)
-    label.endorigin()
+            # QR Code ajustado para tamanho menor dentro da etiqueta
+            f"^FO750,100^BQN,2,10^FDMA,{material};{numero_serie}^FS\n"
 
-    label.origin(20, 180)
-    label.write_text(f"Nº Série: {numero_serie}", char_height=6, char_width=5, line_width=600)
-    label.endorigin()
-
-    label.origin(600, 50)
-    label.barcode_qr(data=f"{material};{numero_serie}", model=2, magnification=6)
-    label.endorigin()
-
-    return label.dumpZPL()
+            f"^XZ\n")
 
 
 # Função para enviar para a impressora
